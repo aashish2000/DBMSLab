@@ -1,0 +1,279 @@
+SQL> @Z:\Ex3\Bakery.sql
+SQL> REM Assignment 3
+SQL> REM Bakery Database
+SQL> REM Drop all tables
+SQL> drop table item_list;
+
+Table dropped.
+
+SQL> drop table Receipts;
+
+Table dropped.
+
+SQL> drop table products;
+
+Table dropped.
+
+SQL> drop table customers;
+
+Table dropped.
+
+> REM CUSTOMERS(customer ID, Last name, First name)
+SQL> create table customers(
+  2  cid number(2) constraint c_primkey primary key,
+  3  lname char(20),
+  4  fname char(20)
+  5  );
+
+Table created.
+
+SQL> REM Sample insertion
+
+SQL> insert into customers values(18, 'DOMKOWSKI', 'ALMETA');
+
+1 row created.
+
+SQL> insert into customers values(19, 'STENZ', 'NATACHA');
+
+1 row created.
+
+SQL> insert into customers values(20, 'ZEME', 'STEPHEN');
+
+1 row created.
+
+SQL> insert into customers values(21,’JOHN’,’DAVID’);
+
+1 row created.
+
+SQL> 
+SQL> REM PRODUCTS (product ID, Flavor, Food, Price)
+SQL> create table products(
+  2  pid varchar2(15) constraint p_primkey primary key,
+  3  flavor char(15),
+  4  food char(15),
+  5  price float(10)
+  6  );
+
+Table created.
+
+SQL> REM Sample insertion
+
+SQL> insert into products values('51-APP','Apple','Danish',1.15);
+
+1 row created.
+
+SQL> insert into products values('51-ATW','Almond','Twist',1.15);
+
+1 row created.
+
+SQL> insert into products values('51-BC','Almond','Bear Claw',1.95);
+
+1 row created.
+
+SQL> insert into products values('51-BLU','Blueberry','Danish',1.15);
+
+1 row created.
+
+SQL> 
+SQL> REM RECEIPTS(receipt number, receipt Date, Customer)
+SQL> create table Receipts(
+  2  rno number(5) constraint r_primkey primary key,
+  3  rdate date,
+  4  cid number(2) constraint r_cid_ref references customers(cid)
+  5  );
+
+Table created.
+
+SQL> REM Sample insertion
+
+SQL> INSERT INTO Receipts values(18129, '28-Oct-2007', 15);
+
+1 row created.
+
+SQL> INSERT INTO Receipts values(51991, '17-Oct-2007', 14);
+
+1 row created.
+
+SQL> INSERT INTO Receipts values(83085, '12-Oct-2007', 7);
+
+1 row created.
+
+SQL> INSERT INTO Receipts values(70723, '28-Oct-2007', 20);
+
+1 row created.
+
+SQL> REM ITEM_LIST (receipt number, Ordinal, Item)
+SQL> create table item_list(
+  2  rno number(5) constraint i_rno_ref references Receipts(rno),
+  3  ordinal number(1),
+  4  item varchar2(15) constraint i_item_ref references products(pid),
+  5  constraint i_primkey primary key(rno, ordinal)
+  6  );
+
+Table created.
+
+SQL> REM Sample insertion
+
+SQL> insert into item_list values(18129, 1,  '70-TU');
+
+1 row created.
+
+SQL> insert into item_list values(51991, 1,  '90-APIE-10');
+
+1 row created.
+
+SQL> insert into item_list values(51991, 2,  '90-CH-PF');
+
+1 row created.
+
+SQL> insert into item_list values(51991, 3,  '90-APP-11');
+
+1 row created.
+
+SQL> @Z:\Ex3\Ex3.sql
+SQL> REM Answers
+SQL> 
+SQL> REM Display the food details that is not purchased by any of customers
+SQL> select * from products where pid not in(select distinct item from item_list);
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+20-BC-C-10      Chocolate       Cake                  8.95                      
+
+SQL> 
+SQL> REM Show the customer details who had placed more than 2 orders on the same date.
+SQL> select * from customers
+  2  where cid in(select cid from Receipts
+  3  group by Receipts.cid, Receipts.rdate
+  4  having count(*) > 2);
+
+       CID LNAME                FNAME                                           
+---------- -------------------- --------------------                            
+        14 SOPKO                RAYFORD                                         
+         8 HELING               RUPERT                                          
+
+SQL> 
+SQL> REM Display the products details that has been ordered maximum by the customers. (use ALL)
+SQL> select * from products p
+  2  where pid in(select item from item_list
+  3  group by item
+  4  having count(*) >= all(select count(*) from item_list group by item));
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+90-APP-11       Apple           Tart                  3.25                      
+
+SQL> 
+SQL> REM Show the number of receipts that contain the product whose price is more than the
+SQL> REM average price of its food type.
+SQL> select count(distinct rno) from item_list
+  2  where item in(select pid from products p
+  3  where price > (select avg(price) from products q
+  4  group by food having p.food = q.food));
+
+COUNT(DISTINCTRNO)                                                              
+------------------                                                              
+               137                                                              
+
+SQL> 
+SQL> REM Display the customer details along with receipt number and date for the receipts that
+SQL> REM are dated on the last day of the receipt month.
+SQL> select c.*, r.rno, r.rdate from customers c
+  2  join Receipts r on(c.cid = r.cid)
+  3  where r.rdate = last_day(r.rdate);
+
+       CID LNAME                FNAME                       RNO RDATE           
+---------- -------------------- -------------------- ---------- ---------       
+         1 LOGAN                JULIET                    85858 31-OCT-07       
+         3 ESPOSITA             TRAVIS                    39829 31-OCT-07       
+        11 STADICK              MIGDALIA                  60270 31-OCT-07       
+        12 MCMAHAN              MELLIE                    70796 31-OCT-07       
+        19 STENZ                NATACHA                   36343 31-OCT-07       
+        20 ZEME                 STEPHEN                   49845 31-OCT-07       
+
+6 rows selected.
+
+SQL> 
+SQL> 
+SQL> REM Display the receipt number(s) and its total price for the receipt(s) that contain Twist
+SQL> REM as one among five items. Include only the receipts with total price more than $25.
+SQL> select i.rno, sum(price) from item_list i join
+  2  products p on(i.item = p.pid)
+  3  where i.rno in(select i.rno from item_list i join products p on(i.item = p.pid) where p.food = 'Twist' group by i.rno)
+  4  group by i.rno
+  5  having sum(price) > 25 and count(*) = 5;
+
+       RNO SUM(PRICE)                                                           
+---------- ----------                                                           
+     83085      48.25                                                           
+     64477      25.35                                                           
+     17729      25.55                                                           
+
+SQL> 
+SQL> REM Display the details (customer details, receipt number, item) for the product that was
+SQL> REM purchased by the least number of customers.
+SQL> select r.rno,c.*,i.item from item_list i join Receipts r on(r.rno = i.rno) join customers c on(r.cid = c.cid)
+  2  where i.item in(
+  3  select p.pid from products p
+  4  join item_list i on(p.pid = i.item)
+  5  group by p.pid
+  6  having count(*) <= all(select count(*) from products p join item_list i on(p.pid = i.item) group by p.pid));
+
+       RNO        CID LNAME                FNAME                ITEM            
+---------- ---------- -------------------- -------------------- --------------- 
+     73716         18 DOMKOWSKI            ALMETA               50-CH           
+     95962          8 HELING               RUPERT               50-CH           
+     99994          6 SLINGLAND            JOSETTE              50-CH           
+     82056         18 DOMKOWSKI            ALMETA               50-CH           
+     77032         14 SOPKO                RAYFORD              50-CH           
+     49845         20 ZEME                 STEPHEN              50-CH           
+
+6 rows selected.
+
+SQL> 
+SQL> REM Display the customer details along with the receipt number who ordered all the
+SQL> REM flavors of Meringue in the same receipt.
+SQL> select c.*, r.rno from customers c join Receipts r on(r.cid=c.cid) where r.rno = (
+  2  select re.rno from Receipts re join item_list it on(re.rno = it.rno)
+  3  join products pr on(pr.pid = it.item)
+  4  where pr.food = 'Meringue' group by re.rno
+  5  having count(distinct flavor) = (select count(distinct flavor) from products where food = 'Meringue'));
+
+       CID LNAME                FNAME                       RNO                 
+---------- -------------------- -------------------- ----------                 
+         8 HELING               RUPERT                    61797                 
+
+SQL> 
+SQL> REM Display the product details of both Pie and Bear Claw.
+SQL> (select * from products where food = 'Pie') union (select * from products where food = 'Bear Claw');
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+51-BC           Almond          Bear Claw             1.95                      
+90-APIE-10      Apple           Pie                   5.25                      
+
+SQL> 
+SQL> REM Display the customers details who haven't placed any orders.
+SQL> select * from customers where cid in(
+  2  select cid from customers minus select cid from Receipts);
+
+       CID LNAME                FNAME                                           
+---------- -------------------- --------------------                            
+        21 JOHN                 DAVID                                           
+
+SQL> 
+SQL> REM Display food with flavor common to Meringue and Tart
+SQL> select food from products where flavor = (
+  2  (select flavor from products where food='Meringue') intersect
+  3  (select flavor from products where food='Tart')
+  4  ) and food not in('Meringue', 'Tart');
+
+FOOD                                                                            
+---------------                                                                 
+Cake                                                                            
+Eclair                                                                          
+Croissant                                                                       
+
+SQL> REM End
+
+SQL> spool off

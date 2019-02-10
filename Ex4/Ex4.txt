@@ -1,0 +1,513 @@
+SQL> @Z:\Ex4\Ex4.sql
+SQL> drop view Blue_Flavor;
+drop view Blue_Flavor
+*
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop view Cheap_Food;
+drop view Cheap_Food
+*
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop view Hot_Food;
+drop view Hot_Food
+*
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop view Pie_Food;
+drop view Pie_Food
+*
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop view Cheap_View;
+drop view Cheap_View
+*
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop sequence Ordinal_No_Seq;
+drop sequence Ordinal_No_Seq
+              *
+ERROR at line 1:
+ORA-02289: sequence does not exist 
+
+
+SQL> drop sequence OSeq;
+
+Sequence dropped.
+
+SQL> drop synonym Product_details;
+drop synonym Product_details
+             *
+ERROR at line 1:
+ORA-01434: private synonym to be dropped does not exist 
+
+
+SQL> 
+SQL> REM Create a view named Blue_Flavor, which display the product details (product id,
+SQL> REM food, price) of Blueberry flavor
+SQL> 
+SQL> create view Blue_Flavor as
+  2  select pid, food, price from products
+  3  where flavor = 'Blueberry';
+
+View created.
+
+SQL> 
+SQL> select COLUMN_NAME, UPDATABLE from USER_UPDATABLE_COLUMNS where TABLE_NAME='BLUE_FLAVOR';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FOOD                           YES                                              
+PRICE                          YES                                              
+
+SQL> 
+SQL> update Blue_Flavor set price='1.00' where pid='90-BLU-11';
+
+1 row updated.
+
+SQL> select * from Blue_Flavor where pid like '90%';
+
+PID             FOOD                 PRICE                                      
+--------------- --------------- ----------                                      
+90-BLU-11       Tart                     1                                      
+
+SQL> insert into Blue_Flavor values('80-B-12','Croissant',1.95);
+
+1 row created.
+
+SQL> select * from products where pid='80-B-12';
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+80-B-12                         Croissant             1.95                      
+
+SQL> insert into Blue_Flavor values('90-BLU-11','Food',2.05);
+insert into Blue_Flavor values('90-BLU-11','Food',2.05)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.PPKEY) violated 
+
+
+SQL> delete from Blue_Flavor where food = 'Tart';
+delete from Blue_Flavor where food = 'Tart'
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (4093.IREF) violated - child record found 
+
+
+SQL> 
+SQL> REM Insert into table, check if view reflects
+SQL> insert into products values('N-11-BLU', 'Blueberry', 'Coulis', 12.10);
+
+1 row created.
+
+SQL> select * from Blue_Flavor;
+
+PID             FOOD                 PRICE                                      
+--------------- --------------- ----------                                      
+90-BLU-11       Tart                     1                                      
+51-BLU          Danish                1.15                                      
+N-11-BLU        Coulis                12.1                                      
+
+SQL> 
+SQL> REM It is updatable and the DML have been done. The delete fails for those recipts
+SQL> REM that are referenced in the item_list.
+SQL> 
+SQL> REM Create a view named Cheap_Food, which display the details (product id, flavor,
+SQL> REM food, price) of products with price lesser than $1. Ensure that, the price of these
+SQL> REM food(s) should never rise above $1 through view.
+SQL> 
+SQL> create view Cheap_Food as
+  2  select * from products
+  3  where price < 1
+  4  with check option;
+
+View created.
+
+SQL> 
+SQL> select COLUMN_NAME, UPDATABLE from USER_UPDATABLE_COLUMNS where TABLE_NAME='CHEAP_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FLAVOR                         YES                                              
+FOOD                           YES                                              
+PRICE                          YES                                              
+
+SQL> 
+SQL> update Cheap_Food set price = '0.10' where price < 1;
+
+2 rows updated.
+
+SQL> select * from Cheap_Food;
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+70-LEM          Lemon           Cookie                  .1                      
+70-W            Walnut          Cookie                  .1                      
+
+SQL> insert into Cheap_Food values('70-LEMO','Lemon','Tarts',9.5);
+insert into Cheap_Food values('70-LEMO','Lemon','Tarts',9.5)
+            *
+ERROR at line 1:
+ORA-01402: view WITH CHECK OPTION where-clause violation 
+
+
+SQL> insert into Cheap_Food values('70-LEMO','Lemon','Tarts',0.5);
+
+1 row created.
+
+SQL> select * from Cheap_Food where pid='70-LEMO';
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+70-LEMO         Lemon           Tarts                   .5                      
+
+SQL> select * from products where pid='70-LEMO';
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+70-LEMO         Lemon           Tarts                   .5                      
+
+SQL> delete from Cheap_View where Food='Tarts';
+delete from Cheap_View where Food='Tarts'
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> delete from Cheap_View where pid='70-LEM';
+delete from Cheap_View where pid='70-LEM'
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> 
+SQL> REM Check if view reflects table insert
+SQL> insert into products values('76-LEMC','Lemon','Cakes',0.99);
+
+1 row created.
+
+SQL> select * from Cheap_Food;
+
+PID             FLAVOR          FOOD                 PRICE                      
+--------------- --------------- --------------- ----------                      
+70-LEM          Lemon           Cookie                  .1                      
+70-W            Walnut          Cookie                  .1                      
+70-LEMO         Lemon           Tarts                   .5                      
+76-LEMC         Lemon           Cakes                  .99                      
+
+SQL> 
+SQL> REM It is updatable and the DML have been done. The pid referred in item_list can't
+SQL> REM be modified or deleted
+SQL> 
+SQL> REM Create a view called Hot_Food that show the product id and its quantity where the
+SQL> REM same product is ordered more than once in the same receipt.
+SQL> 
+SQL> create view Hot_Food as
+  2  select item, count(*) as count from item_list
+  3  group by rno, item
+  4  having count(*) > 1;
+
+View created.
+
+SQL> 
+SQL> select COLUMN_NAME, UPDATABLE from USER_UPDATABLE_COLUMNS where TABLE_NAME='HOT_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+ITEM                           NO                                               
+COUNT                          NO                                               
+
+SQL> 
+SQL> update Hot_Food set count=3 where count=2;
+update Hot_Food set count=3 where count=2
+       *
+ERROR at line 1:
+ORA-01732: data manipulation operation not legal on this view 
+
+
+SQL> insert into Hot_Food values('Cakes',10);
+insert into Hot_Food values('Cakes',10)
+*
+ERROR at line 1:
+ORA-01733: virtual column not allowed here 
+
+
+SQL> insert into Hot_Food values('90-CHRE',5);
+insert into Hot_Food values('90-CHRE',5)
+*
+ERROR at line 1:
+ORA-01733: virtual column not allowed here 
+
+
+SQL> delete from Hot_Food where item='90-APR-PF';
+delete from Hot_Food where item='90-APR-PF'
+            *
+ERROR at line 1:
+ORA-01732: data manipulation operation not legal on this view 
+
+
+SQL> 
+SQL> REM It is not insert or modify updatable. We can delete the items.
+SQL> 
+SQL> REM Create a view named Pie_Food that will display the details (customer lname, flavor,
+SQL> REM receipt number and date, ordinal) who had ordered the Pie food with receipt details.
+SQL> 
+SQL> create view Pie_Food as
+  2  select c.lname, p.flavor, r.rno, r.rdate, i.ordinal
+  3  from customers c, products p, Receipts r, item_list i
+  4  where p.food = 'Pie' and c.cid = r.cid and i.item = p.pid and i.rno = r.rno;
+
+View created.
+
+SQL> 
+SQL> select COLUMN_NAME, UPDATABLE from USER_UPDATABLE_COLUMNS where TABLE_NAME='PIE_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+LNAME                          NO                                               
+FLAVOR                         NO                                               
+RNO                            NO                                               
+RDATE                          NO                                               
+ORDINAL                        YES                                              
+
+SQL> 
+SQL> update Pie_Food set rdate = '28-NOV-07' where lname='Arnn';
+update Pie_Food set rdate = '28-NOV-07' where lname='Arnn'
+                    *
+ERROR at line 1:
+ORA-01779: cannot modify a column which maps to a non key-preserved table 
+
+
+SQL> update Pie_Food set ordinal = 5 where ordinal = 4;
+
+1 row updated.
+
+SQL> update Pie_Food set ordinal=1 where ordinal = 5;
+update Pie_Food set ordinal=1 where ordinal = 5
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.ILPKEY) violated 
+
+
+SQL> insert into Pie_Food values('Arnn','Apple',11548,'21-OCT-07',5);
+insert into Pie_Food values('Arnn','Apple',11548,'21-OCT-07',5)
+*
+ERROR at line 1:
+ORA-01779: cannot modify a column which maps to a non key-preserved table 
+
+
+SQL> delete from Pie_Food where ordinal = 5;
+
+1 row deleted.
+
+SQL> delete from Pie_Food where lname = 'ARNN';
+
+1 row deleted.
+
+SQL> insert into item_list values(68753,6,'90-APIE-10');
+
+1 row created.
+
+SQL> select * from Pie_Food where ordinal=6;
+
+LNAME                FLAVOR                 RNO RDATE        ORDINAL            
+-------------------- --------------- ---------- --------- ----------            
+DUNLOW               Apple                68753 11-OCT-07          6            
+
+SQL> 
+SQL> REM It is not entirely updatable as only ordinal can be modified, otherwise non-updatable
+SQL> 
+SQL> REM Create a view Cheap_View from Cheap_Food that shows only the product id, flavor
+SQL> REM and food.
+SQL> 
+SQL> create view Cheap_View as
+  2  select pid, flavor, food from Cheap_Food;
+
+View created.
+
+SQL> 
+SQL> select COLUMN_NAME, UPDATABLE from USER_UPDATABLE_COLUMNS where TABLE_NAME='CHEAP_VIEW';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FLAVOR                         YES                                              
+FOOD                           YES                                              
+
+SQL> 
+SQL> select * from Cheap_View;
+
+PID             FLAVOR          FOOD                                            
+--------------- --------------- ---------------                                 
+70-LEM          Lemon           Cookie                                          
+70-W            Walnut          Cookie                                          
+70-LEMO         Lemon           Tarts                                           
+76-LEMC         Lemon           Cakes                                           
+
+SQL> delete from Cheap_View where Food='Cakes';
+
+1 row deleted.
+
+SQL> delete from Cheap_View where pid='70-LEM';
+delete from Cheap_View where pid='70-LEM'
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (4093.IREF) violated - child record found 
+
+
+SQL> insert into Cheap_View values('76-LEMCS','Lemon','Coulis');
+insert into Cheap_View values('76-LEMCS','Lemon','Coulis')
+            *
+ERROR at line 1:
+ORA-01402: view WITH CHECK OPTION where-clause violation 
+
+
+SQL> update Cheap_View set Flavor = 'Lemony' where flavor = 'Lemon';
+
+2 rows updated.
+
+SQL> 
+SQL> REM It is updatable and the DML have been done. Values referred by item_list can't be removed
+SQL> 
+SQL> REM Create a sequence named Ordinal_No_Seq which generates the ordinal number
+SQL> REM starting from 1, increment by 1, to a maximum of 10. Include the options of cycle,
+SQL> REM cache and order. Use this sequence to populate the item_list table for a new order.
+SQL> 
+SQL> create sequence Ordinal_No_Seq
+  2  start with 1
+  3  minvalue 1
+  4  maxvalue 10
+  5  increment by 1
+  6  cache 5
+  7  cycle;
+
+Sequence created.
+
+SQL> 
+SQL> create sequence OSeq
+  2  start with 3
+  3  minvalue 1
+  4  maxvalue 5
+  5  increment by 1
+  6  cache 2
+  7  cycle;
+
+Sequence created.
+
+SQL> 
+SQL> insert into item_list values(34378, OSeq.nextval, '45-VA');
+
+1 row created.
+
+SQL> insert into item_list values(34378, OSeq.nextval, '45-VA');
+
+1 row created.
+
+SQL> insert into item_list values(34378, OSeq.nextval, '45-VA');
+
+1 row created.
+
+SQL> select * from item_list where rno=34378;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     34378          1 90-CHR-11                                                 
+     34378          2 45-VA                                                     
+     34378          3 45-VA                                                     
+     34378          4 45-VA                                                     
+     34378          5 45-VA                                                     
+
+SQL> 
+SQL> delete from item_list where rno=34378 and ordinal = 1;
+
+1 row deleted.
+
+SQL> insert into item_list values(34378, OSeq.nextval, '90-APIE-10');
+
+1 row created.
+
+SQL> select * from item_list where rno=34378;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     34378          2 45-VA                                                     
+     34378          3 45-VA                                                     
+     34378          4 45-VA                                                     
+     34378          5 45-VA                                                     
+     34378          1 90-APIE-10                                                
+
+SQL> 
+SQL> REM Create a synonym named Product_details for the item_list relation. Perform the
+SQL> REM DML operations on it.
+SQL> 
+SQL> create synonym Product_details for item_list;
+
+Synonym created.
+
+SQL> 
+SQL> insert into Product_details values(41963,5,'45-VA');
+
+1 row created.
+
+SQL> select * from Product_details where rno = 41963;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     41963          1 50-ALM                                                    
+     41963          2 90-CH-PF                                                  
+     41963          5 45-VA                                                     
+
+SQL> delete from Product_details where rno = 41963;
+
+3 rows deleted.
+
+SQL> select * from Product_details where rno = 41963;
+
+no rows selected
+
+SQL> 
+SQL> 
+SQL> REM Drop all the above created database objects.
+SQL> drop view Blue_Flavor;
+
+View dropped.
+
+SQL> drop view Cheap_Food;
+
+View dropped.
+
+SQL> drop view Hot_Food;
+
+View dropped.
+
+SQL> drop view Pie_Food;
+
+View dropped.
+
+SQL> drop view Cheap_View;
+
+View dropped.
+
+SQL> drop sequence Ordinal_No_Seq;
+
+Sequence dropped.
+
+SQL> drop synonym Product_details;
+
+Synonym dropped.
+
+SQL> spool off

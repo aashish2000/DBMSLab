@@ -1,0 +1,517 @@
+SQL> @Z:\Ex1\Ex1.sql
+SQL> REM Assignment 1
+SQL> 
+SQL> REM Drop all tables
+SQL> drop table order_info;
+drop table order_info
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop table order_table;
+drop table order_table
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop table employee;
+drop table employee
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop table customer;
+drop table customer
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop table pincode;
+drop table pincode
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> drop table part;
+drop table part
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> 
+SQL> REM Pincode table creation, description, insertion
+SQL> create table pincode(
+  2  pin_num number(6) constraint pinpk primary key,
+  3  loc char(15) constraint locnn not null
+  4  );
+
+Table created.
+
+SQL>
+SQL> desc pincode;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PIN_NUM                                   NOT NULL NUMBER(6)
+ LOC                                       NOT NULL CHAR(15)
+
+SQL> REM Insert values
+SQL> insert into pincode values(600011,'Perambur');
+
+1 row created.
+
+SQL> insert into pincode values(600012,'Villivakkam');
+
+1 row created.
+
+SQL> insert into pincode values(600013,'TNagar');
+
+1 row created.
+
+SQL> REM Not null constraint violation
+SQL> insert into pincode values(600014,NULL);
+insert into pincode values(600014,NULL)
+                                  *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("4093"."PINCODE"."LOC") 
+
+
+SQL> REM Primary Key violation
+SQL> insert into pincode values(600013,'Erode');
+insert into pincode values(600013,'Erode')
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.PINPK) violated 
+
+
+SQL> 
+SQL> REM Employee table creation, description, insertion
+SQL> create table employee(
+  2  emp_no varchar2(10) constraint emp_pk primary key,
+  3  emp_name char(15) constraint emp_nn not null,
+  4  dob date,
+  5  pin_num number(6) constraint emp_pin references pincode(pin_num),
+  6  constraint ch check(emp_no like 'E%')
+  7  );
+
+Table created.
+
+SQL> 
+SQL> desc employee;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ EMP_NO                                    NOT NULL VARCHAR2(10)
+ EMP_NAME                                  NOT NULL CHAR(15)
+ DOB                                                DATE
+ PIN_NUM                                            NUMBER(6)
+
+SQL> REM Insert values
+SQL> insert into employee values('E0001','Ram','20-Aug-1999',600011);
+
+1 row created.
+
+SQL> insert into employee values('E0002','Lakshmi','22-Jun-2000',600012);
+
+1 row created.
+
+SQL> insert into employee values('E0003','Kumar','28-Mar-2000',600013);
+
+1 row created.
+
+SQL> REM Not null primary key violation
+SQL> insert into employee values(NULL,'Kamesh','28-Mar-2000',600013);
+insert into employee values(NULL,'Kamesh','28-Mar-2000',600013)
+                            *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("4093"."EMPLOYEE"."EMP_NO") 
+
+
+SQL> REM Pincode foreign key violation
+SQL> insert into employee values('E0004','Kumar','28-Mar-2001',600019);
+insert into employee values('E0004','Kumar','28-Mar-2001',600019)
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (4093.EMP_PIN) violated - parent key not found 
+
+
+SQL> REM Employee number violation
+SQL> insert into employee values('D0004','Kumar','28-Mar-2001',600019);
+insert into employee values('D0004','Kumar','28-Mar-2001',600019)
+*
+ERROR at line 1:
+ORA-02290: check constraint (4093.CH) violated 
+
+
+SQL> 
+SQL> REM Customer table creation, description, insertion
+SQL> create table customer(
+  2  cus_no varchar2(10) constraint cuspk primary key,
+  3  cus_name char(20),
+  4  st_name char(20),
+  5  pin_num number(6) constraint cusfk references pincode(pin_num),
+  6  dob date,
+  7  ph_no number(10) constraint cus_ph unique,
+  8  constraint cus_nc check(cus_no like 'C%')
+  9  );
+
+Table created.
+
+SQL> 
+SQL> desc customer;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ CUS_NO                                    NOT NULL VARCHAR2(10)
+ CUS_NAME                                           CHAR(20)
+ ST_NAME                                            CHAR(20)
+ PIN_NUM                                            NUMBER(6)
+ DOB                                                DATE
+ PH_NO                                              NUMBER(10)
+
+SQL> 
+SQL> REM Insert values
+SQL> insert into customer values('C2000','Mani','West Road',600012,'31-Aug-1999',9000000001);
+
+1 row created.
+
+SQL> insert into customer values('C2001','John','East street',600013,'19-Dec-1999',9000000002);
+
+1 row created.
+
+SQL> insert into customer values('C2002','Adam','East Lane',600011,'29-Dec-1999',9000000003);
+
+1 row created.
+
+SQL> REM Primary key violation
+SQL> insert into customer values('C2002','Amy','South Lane',600011,'29-Apr-1999',9000000004);
+insert into customer values('C2002','Amy','South Lane',600011,'29-Apr-1999',9000000004)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.CUSPK) violated 
+
+
+SQL> REM Customer number check violation
+SQL> insert into customer values('A2002','Amy','South Lane',600011,'29-Apr-1999',9000000005);
+insert into customer values('A2002','Amy','South Lane',600011,'29-Apr-1999',9000000005)
+*
+ERROR at line 1:
+ORA-02290: check constraint (4093.CUS_NC) violated 
+
+
+SQL> REM Part table creation, description, insertion
+SQL> create table part(
+  2  part_no varchar2(10) constraint part_pk primary key,
+  3  part_name char(15),
+  4  price number(10) constraint p_pri not null,
+  5  quan number(10) constraint q_c check(quan>0),
+  6  constraint part_nc check(part_no like 'P%')
+  7  );
+
+Table created.
+
+SQL> 
+SQL> desc part;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PART_NO                                   NOT NULL VARCHAR2(10)
+ PART_NAME                                          CHAR(15)
+ PRICE                                     NOT NULL NUMBER(10)
+ QUAN                                               NUMBER(10)
+
+SQL> 
+SQL> REM Insert values
+SQL> insert into part values('P0001','Map',300,2);
+
+1 row created.
+
+SQL> insert into part values('P0002','Bag',2199,5);
+
+1 row created.
+
+SQL> REM Part check constraint error
+SQL> insert into part values('A0003','Bag',2199,10);
+insert into part values('A0003','Bag',2199,10)
+*
+ERROR at line 1:
+ORA-02290: check constraint (4093.PART_NC) violated 
+
+
+SQL> REM Primary key violation
+SQL> insert into part values('P0002','Belt',299,5);
+insert into part values('P0002','Belt',299,5)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.PART_PK) violated 
+
+
+SQL> REM Orders table creation, description, insertion
+SQL> create table order_table(
+  2  order_no varchar2(10) constraint or_pk primary key,
+  3  emp_no varchar2(10) constraint emp_fk references employee(emp_no),
+  4  cus_no varchar2(10) constraint cus_fkey references customer(cus_no),
+  5  rec_date date,
+  6  ship_date date,
+  7  constraint ch_date check(rec_date<ship_date)
+  8  );
+
+Table created.
+
+SQL> 
+SQL> desc order_table;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ORDER_NO                                  NOT NULL VARCHAR2(10)
+ EMP_NO                                             VARCHAR2(10)
+ CUS_NO                                             VARCHAR2(10)
+ REC_DATE                                           DATE
+ SHIP_DATE                                          DATE
+
+SQL> 
+SQL> REM Insert values
+SQL> insert into order_table values('O0001','E0001','C2000','12-Aug-2018','13-Aug-2018');
+
+1 row created.
+
+SQL> insert into order_table values('O0002','E0003','C2002','15-Aug-2018','18-Aug-2018');
+
+1 row created.
+
+SQL> insert into order_table values('O0003','E0002','C2001','10-Aug-2018','19-Aug-2018');
+
+1 row created.
+
+SQL> REM Order number Primary Key violation
+SQL> insert into order_table values('O0003','E0001','C2001','10-Aug-2018','19-Aug-2019');
+insert into order_table values('O0003','E0001','C2001','10-Aug-2018','19-Aug-2019')
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4093.OR_PK) violated 
+
+
+SQL> REM Date check violation
+SQL> insert into order_table values('O0004','E0002','C2001','20-Aug-2018','19-Aug-2018');
+insert into order_table values('O0004','E0002','C2001','20-Aug-2018','19-Aug-2018')
+*
+ERROR at line 1:
+ORA-02290: check constraint (4093.CH_DATE) violated 
+
+
+SQL> REM Order Info table creation, description, insertion
+SQL> create table order_info(
+  2  order_no varchar2(10) constraint o_fk references order_table(order_no),
+  3  part_no varchar2(10) constraint p_fk references part(part_no),
+  4  quan number(10),
+  5  constraint order_pk primary key(order_no,part_no)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> desc order_info;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ORDER_NO                                  NOT NULL VARCHAR2(10)
+ PART_NO                                   NOT NULL VARCHAR2(10)
+ QUAN                                               NUMBER(10)
+
+SQL> 
+SQL> REM Insert values
+SQL> insert into order_info values('O0001','P0001',1);
+
+1 row created.
+
+SQL> insert into order_info values('O0001','P0002',2);
+
+1 row created.
+
+SQL> insert into order_info values('O0002','P0002',1);
+
+1 row created.
+
+SQL> insert into order_info values('O0002','P0001',1);
+
+1 row created.
+
+SQL> REM Order foreign key violation
+SQL> insert into order_info values('O0005','P0001',2);
+insert into order_info values('O0005','P0001',2)
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (4093.O_FK) violated - parent key not found 
+
+
+SQL> REM Part number violation
+SQL> insert into order_info values('O0001','P0009',2);
+insert into order_info values('O0001','P0009',2)
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (4093.P_FK) violated - parent key not found 
+
+
+SQL> 
+SQL> select * from pincode;
+
+   PIN_NUM LOC                                                                  
+---------- ---------------                                                      
+    600011 Perambur                                                             
+    600012 Villivakkam                                                          
+    600013 TNagar                                                               
+
+SQL> select * from employee;
+
+EMP_NO     EMP_NAME        DOB          PIN_NUM                                 
+---------- --------------- --------- ----------                                 
+E0001      Ram             20-AUG-99     600011                                 
+E0002      Lakshmi         22-JUN-00     600012                                 
+E0003      Kumar           28-MAR-00     600013                                 
+
+SQL> select * from customer;
+
+CUS_NO     CUS_NAME             ST_NAME                 PIN_NUM DOB             
+---------- -------------------- -------------------- ---------- ---------       
+     PH_NO                                                                      
+----------                                                                      
+C2000      Mani                 West Road                600012 31-AUG-99       
+9000000001                                                                      
+                                                                                
+C2001      John                 East street              600013 19-DEC-99       
+9000000002                                                                      
+                                                                                
+C2002      Adam                 East Lane                600011 29-DEC-99       
+9000000003                                                                      
+                                                                                
+
+SQL> select * from part;
+
+PART_NO    PART_NAME            PRICE       QUAN                                
+---------- --------------- ---------- ----------                                
+P0001      Map                    300          2                                
+P0002      Bag                   2199          5                                
+
+SQL> select * from order_table;
+
+ORDER_NO   EMP_NO     CUS_NO     REC_DATE  SHIP_DATE                            
+---------- ---------- ---------- --------- ---------                            
+O0001      E0001      C2000      12-AUG-18 13-AUG-18                            
+O0002      E0003      C2002      15-AUG-18 18-AUG-18                            
+O0003      E0002      C2001      10-AUG-18 19-AUG-18                            
+
+SQL> select * from order_info;
+
+ORDER_NO   PART_NO          QUAN                                                
+---------- ---------- ----------                                                
+O0001      P0001               1                                                
+O0001      P0002               2                                                
+O0002      P0002               1                                                
+O0002      P0001               1                                                
+
+SQL> 
+SQL> 
+SQL> REM Add Reorder level as an attribute to part table
+SQL> alter table part add reorder_level varchar(2);
+
+Table altered.
+
+SQL> desc part;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PART_NO                                   NOT NULL VARCHAR2(10)
+ PART_NAME                                          CHAR(15)
+ PRICE                                     NOT NULL NUMBER(10)
+ QUAN                                               NUMBER(10)
+ REORDER_LEVEL                                      VARCHAR2(2)
+
+SQL> 
+SQL> REM Add hiredate as attribute to employee table
+SQL> alter table employee add hiredate date;
+
+Table altered.
+
+SQL> 
+SQL> REM Increase length of customer name attribute
+SQL> alter table customer modify cus_name char(50);
+
+Table altered.
+
+SQL> desc customer;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ CUS_NO                                    NOT NULL VARCHAR2(10)
+ CUS_NAME                                           CHAR(50)
+ ST_NAME                                            CHAR(20)
+ PIN_NUM                                            NUMBER(6)
+ DOB                                                DATE
+ PH_NO                                              NUMBER(10)
+
+SQL> 
+SQL> REM Remove the dob column of customer
+SQL> alter table customer drop column dob;
+
+Table altered.
+
+SQL> desc customer;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ CUS_NO                                    NOT NULL VARCHAR2(10)
+ CUS_NAME                                           CHAR(50)
+ ST_NAME                                            CHAR(20)
+ PIN_NUM                                            NUMBER(6)
+ PH_NO                                              NUMBER(10)
+
+SQL> 
+SQL> REM Add constraint such that received date must be entered
+SQL> alter table order_table modify rec_date not null;
+
+Table altered.
+
+SQL> REM Violation
+SQL> insert into order_table values('O1000','E0001','C0001',NULL,'19-Dec-2018');
+insert into order_table values('O1000','E0001','C0001',NULL,'19-Dec-2018')
+                                                       *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("4093"."ORDER_TABLE"."REC_DATE") 
+
+
+SQL> 
+SQL> REM Add constraint such that deleting a Order removes the
+SQL> REM details from the other table
+SQL> alter table order_info drop constraint o_fk;
+
+Table altered.
+
+SQL> alter table order_info add constraint o_fkc foreign key(order_no) references
+  2  order_table(order_no) on delete cascade;
+
+Table altered.
+
+SQL> desc order_info;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ORDER_NO                                  NOT NULL VARCHAR2(10)
+ PART_NO                                   NOT NULL VARCHAR2(10)
+ QUAN                                               NUMBER(10)
+
+SQL> REM Deletion
+SQL> delete from order_table where order_no = 'O0001';
+
+1 row deleted.
+
+SQL> select * from order_table;
+
+ORDER_NO   EMP_NO     CUS_NO     REC_DATE  SHIP_DATE                            
+---------- ---------- ---------- --------- ---------                            
+O0002      E0003      C2002      15-AUG-18 18-AUG-18                            
+O0003      E0002      C2001      10-AUG-18 19-AUG-18                            
+
+SQL> select * from order_info;
+
+ORDER_NO   PART_NO          QUAN                                                
+---------- ---------- ----------                                                
+O0002      P0002               1                                                
+O0002      P0001               1                                                
+
+SQL> spool off
