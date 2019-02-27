@@ -60,8 +60,6 @@ insert into customers values(19, 'STENZ', 'NATACHA');
 insert into customers values(20, 'ZEME', 'STEPHEN');
 insert into customers values(21, 'JOHN', 'DAVID');
 
-create table
-
 REM --------------------------------------------------------------------------
 REM PRODUCTS (product number,  Flavor, Food, Price)
 REM --------------------------------------------------------------------------

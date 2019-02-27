@@ -1,0 +1,175 @@
+SQL> @Z:\Ex5\Ex5.sql
+SQL> REM ASSIGNMENT 5
+SQL> REM 1. Check whether the given combination of food and flavor is available. If one or
+SQL> REM both are not available, display the relevant message.
+SQL> declare
+  2  
+  3  foodn products.food%type;
+  4  flavorn products.flavor%type;
+  5  foodout products.food%type;
+  6  flavorout products.flavor%type;
+  7  
+  8  begin
+  9  
+ 10  foodn:='&foodn';
+ 11  flavorn:='&flavorn';
+ 12  begin
+ 13  select food, flavor into foodout, flavorout from products where food=foodn and flavor=flavorn;
+ 14  exception when no_data_found then
+ 15  dbms_output.put_line('Combination not found!');
+ 16  end;
+ 17  if SQL%FOUND then
+ 18  dbms_output.put_line('Combination found!');
+ 19  else
+ 20  begin
+ 21  select distinct food into foodout from products where food=foodn;
+ 22  exception when no_data_found then
+ 23  dbms_output.put_line('Food not found!');
+ 24  end;
+ 25  if SQL%FOUND then
+ 26  dbms_output.put_line('Food found!');
+ 27  end if;
+ 28  begin
+ 29  select distinct flavor into flavorout from products where flavor=flavorn;
+ 30  exception when no_data_found then
+ 31  dbms_output.put_line('Flavor not found!');
+ 32  end;
+ 33  if SQL%FOUND then
+ 34  dbms_output.put_line('Flavor found!');
+ 35  end if;
+ 36  end if;
+ 37  end;
+ 38  /
+Enter value for foodn: Cookie
+old  10: foodn:='&foodn';
+new  10: foodn:='Cookie';
+Enter value for flavorn: Chocolate
+old  11: flavorn:='&flavorn';
+new  11: flavorn:='Chocolate';
+Combination not found!                                                          
+Food found!                                                                     
+Flavor found!                                                                   
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> REM 2. On a given date, find the number of items sold (Use Implicit cursor).
+SQL> declare
+  2  countitems number(5);
+  3  datein date;
+  4  begin
+  5  datein := '&datein';
+  6  select count(*) into countitems from item_list join Receipts on(item_list.rno = Receipts.rno) where Receipts.rdate = datein;
+  7  DBMS_OUTPUT.PUT_LINE('Value: ' || countitems);
+  8  end;
+  9  /
+Enter value for datein: 07-Oct-07
+old   5: datein := '&datein';
+new   5: datein := '07-Oct-07';
+Value: 25                                                                       
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> REM 3. A user desired to buy the product with the specific price. Ask the user for s price,
+SQL> REM find the food item(s) that is equal or closest to the desired price. Print the product
+SQL> REM number, food type, flavor and price. Also print the number of items that is equal or
+SQL> REM closest to the desired price.
+SQL> 
+SQL> declare
+  2  ip_price products.price%type;
+  3  cursor c1 is select * from products
+  4  where abs(price-ip_price) =
+  5  (select min(abs(price-ip_price)) from products);
+  6  pro products%rowtype;
+  7  c integer;
+  8  begin
+  9  	     ip_price := &input_price;
+ 10  	     open c1;
+ 11  	     c := 0;
+ 12  	     loop
+ 13  		     fetch c1
+ 14  		     into pro.pid, pro.flavor, pro.food, pro.price;
+ 15  		     if c1%found then
+ 16  			     dbms_output.put_line(pro.pid||' '||pro.flavor||' '||pro.food||' '||pro.price);
+ 17  			     c := c+1;
+ 18  		     else
+ 19  			     exit;
+ 20  		     end if;
+ 21  	     end loop;
+ 22  	     dbms_output.put_line('Count = '||c);
+ 23  end;
+ 24  /
+Enter value for input_price: 3
+old   9: 	ip_price := &input_price;
+new   9: 	ip_price := 3;
+45-CH Chocolate       Eclair          3.25                                      
+45-VA Vanilla         Eclair          3.25                                      
+90-APP-11 Apple           Tart            3.25                                  
+90-APR-PF Apricot         Tart            3.25                                  
+90-BER-11 Berry           Tart            3.25                                  
+90-BLK-PF Blackberry      Tart            3.25                                  
+90-BLU-11 Blueberry       Tart            3.25                                  
+90-CHR-11 Cherry          Tart            3.25                                  
+90-LEM-11 Lemon           Tart            3.25                                  
+Count = 9                                                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> REM 4. Display the customer name along with the details of item and its quantity ordered for
+SQL> REM the given order number. Also calculate the total quantity ordered as shown below:
+SQL> declare
+  2  cust_name1 customers.lname%type;
+  3  cust_name2 customers.fname%type;
+  4  qty integer;
+  5  rec_sel receipts.rno%type;
+  6  counts integer;
+  7  food_sel products.food%type;
+  8  flavor_sel products.flavor%type;
+  9  qtys integer;
+ 10  cursor c1 is select food, flavor, count(*) as qty
+ 11  from products p join item_list i on i.item = p.pid
+ 12  where i.rno = rec_sel
+ 13  group by (p.food,p.flavor);
+ 14  cursor c2 is select fname,lname from customers c join receipts r on r.cid = c.cid
+ 15  where rno = rec_sel;
+ 16  
+ 17  begin
+ 18  rec_sel := &rec_sel;
+ 19  select count(count(*)) into counts from products p join item_list i on i.item = p.pid
+ 20  where i.rno = rec_sel
+ 21  group by (p.food,p.flavor);
+ 22  select sum(count(*)) into qty from products p join item_list i on i.item = p.pid
+ 23  where i.rno = rec_sel
+ 24  group by (p.food,p.flavor);
+ 25  open c1;
+ 26  open c2;
+ 27  fetch c2 into cust_name1,cust_name2;
+ 28  dbms_output.put_line('Customer name: '||cust_name1||' '||cust_name2);
+ 29  dbms_output.put_line('FOOD 	  FLAVOR	 QUANTITY');
+ 30  dbms_output.put_line('------------------------------------------');
+ 31  for count in 1..counts loop
+ 32  		 fetch c1 into food_sel,flavor_sel,qtys;
+ 33  		 dbms_output.put_line(flavor_sel||' '||food_sel||' '||qtys);
+ 34  	 end loop; 
+ 35  dbms_output.put_line('------------------------------------------');
+ 36  dbms_output.put_line('Total Quantity = '||qty);
+ 37  end;
+ 38  /
+Enter value for rec_sel: 77406
+old  18: rec_sel := &rec_sel;
+new  18: rec_sel := 77406;
+Customer name: KIP                  ARNN                                        
+FOOD           FLAVOR         QUANTITY                                          
+------------------------------------------                                      
+Almond          Twist           1                                               
+Apricot         Croissant       2                                               
+Blackberry      Tart            1                                               
+Opera           Cake            1                                               
+------------------------------------------                                      
+Total Quantity = 5                                                                
+
+PL/SQL procedure successfully completed.
+
+SQL> spool off;
