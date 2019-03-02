@@ -59,10 +59,11 @@ SQL> declare
   3  datein date;
   4  begin
   5  datein := '&datein';
-  6  select count(*) into countitems from item_list join Receipts on(item_list.rno = Receipts.rno) where Receipts.rdate = datein;
-  7  DBMS_OUTPUT.PUT_LINE('Value: ' || countitems);
-  8  end;
-  9  /
+  6  update item_list i set i.ordinal=i.ordinal+0 where i.rno in(select Receipts.rno from item_list join Receipts on(item_list.rno = Receipts.rno) where Receipts.rdate = datein); 
+  7  countitems := SQL%ROWCOUNT;
+  8  DBMS_OUTPUT.PUT_LINE('Value: ' || countitems);
+  9  end;
+  10  /
 Enter value for datein: 07-Oct-07
 old   5: datein := '&datein';
 new   5: datein := '07-Oct-07';

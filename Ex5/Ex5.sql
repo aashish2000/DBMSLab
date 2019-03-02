@@ -52,10 +52,11 @@ end;
 REM 2. On a given date, find the number of items sold (Use Implicit cursor).
 declare 
 countitems number(5); 
-datein date; 
+datein date;
 begin 
 datein := '&datein'; 
-select count(*) into countitems from item_list join Receipts on(item_list.rno = Receipts.rno) where Receipts.rdate = datein; 
+update item_list i set i.ordinal=i.ordinal+0 where i.rno in(select Receipts.rno from item_list join Receipts on(item_list.rno = Receipts.rno) where Receipts.rdate = datein); 
+countitems := SQL%ROWCOUNT;
 DBMS_OUTPUT.PUT_LINE('Value: ' || countitems); 
 end;
 /
