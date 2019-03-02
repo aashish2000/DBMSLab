@@ -1,8 +1,17 @@
-savepoint s1;
+REM ASSIGNMENT 6
 
+REM Savepoint
+savepoint S1;
+
+REM Add column for amount
 alter table Receipts add amount number(5,2);
 
-REM ************1
+REM 1. For the given receipt number, calculate the Discount as follows:
+REM For total amount > $10 and total amount < $25: Discount=5%
+REM For total amount > $25 and total amount < $50: Discount=10%
+REM For total amount > $50: Discount=20%
+REM Calculate the amount (after the discount) and update the same in Receipts table.
+REM Print the receipt
 
 create or replace procedure discountcalc(amt IN products.price%type, discount OUT products.price%type, total OUT products.price%type, discountp OUT int) as
 begin
@@ -48,7 +57,6 @@ where i.rno = rec_sel
 group by (p.food,p.flavor,p.price);
 cursor c2 is select fname,lname,rdate from customers c join receipts r on r.cid = c.cid
 where rno = rec_sel;
-
 begin
 rec_sel := &rec_sel;
 select count(count(*)) into counts from products p join item_list i on i.item = p.pid 
@@ -85,9 +93,12 @@ dbms_output.put_line('------------------------------------------');
 end;
 /
 
-REM *************1
+REM End of Question 1
 
-REM *************2
+REM 2. Ask the user for the budget and his/her preferred food type. You recommend the best 
+REM item(s) within the planned budget for the given food type. The best item is determined 
+REM by the maximum ordered product among many customers for the given food type.
+REM Print the recommended product that suits your budget
 
 create or replace procedure budgetitems(budget IN products.price%type, iprice IN products.price%type, qty OUT int) as
 begin
@@ -113,7 +124,6 @@ cursor c1 is select p.pid, p.food, p.flavor, p.price, count(*) as counts from it
 where p.food = foodin and p.price <= budget
 group by p.pid, p.food, p.flavor, p.price
 order by counts desc;
-
 begin
 budget := &budget;
 foodin := '&foodin';
@@ -139,9 +149,13 @@ end if;
 end;
 /
 
-REM **************2
+REM End of Question 2
 
-REM **************3
+REM 3. Take a receipt number and item as arguments, and insert this information into 
+REM the Item list. However, if there is already a receipt with that receipt number, then 
+REM keep adding 1 to the maximum ordinal number. Else before inserting into the Item list 
+REM with ordinal as 1, ask the user to give the customer name who placed the order and insert 
+REM this information into the Receipts.
 
 create or replace procedure ordinalinc(ord IN OUT item_list.ordinal%type) as
 begin
@@ -179,15 +193,17 @@ insert into item_list values(receiptin, ord, itemin);
 dbms_output.put_line('Inserted '||receiptin||' '||ord||' '||itemin);
 end;
 
-REM **************3
+REM End of Question 3
 
-REM **************4
+REM 4. Write a stored function to display the customer name who ordered 
+REM maximum for the given food and flavor.
 
 
 
-REM **************4
+REM End of Question 4
 
-REM **************5
+REM 5. Implement Question (2) using stored function to return the amount to be paid 
+REM and update the same, for the given receipt number.
 
 create or replace function amountcalc(amt IN products.price%type, discount OUT products.price%type, discountp OUT int) return products.price%type
 as
@@ -233,7 +249,6 @@ where i.rno = rec_sel
 group by (p.food,p.flavor,p.price);
 cursor c2 is select fname,lname,rdate from customers c join receipts r on r.cid = c.cid
 where rno = rec_sel;
-
 begin
 rec_sel := &rec_sel;
 select count(count(*)) into counts from products p join item_list i on i.item = p.pid 
@@ -270,4 +285,9 @@ dbms_output.put_line('------------------------------------------');
 end;
 /
 
-REM **************5
+REM End of Question 5
+
+REM Rollback
+rollback to S1;
+
+REM End
