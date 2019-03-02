@@ -192,6 +192,7 @@ end if;
 insert into item_list values(receiptin, ord, itemin);
 dbms_output.put_line('Inserted '||receiptin||' '||ord||' '||itemin);
 end;
+/
 
 REM End of Question 3
 
