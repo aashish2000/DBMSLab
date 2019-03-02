@@ -198,29 +198,59 @@ REM End of Question 3
 REM 4. Write a stored function to display the customer name who ordered 
 REM maximum for the given food and flavor.
 
+create or replace function maxcustomer(p IN products.pid%type) return varchar2 as
+c customers.cid%type;
+m int;
+n1 customers.fname%type;
+n2 customers.lname%type;
+name varchar2(40);
+begin
+select max(count(*)) into m from receipts r join item_list i on i.rno = r.rno
+where i.item = p
+group by r.cid;
+select r.cid into c from receipts r join item_list i on i.rno = r.rno
+where i.item = p
+group by r.cid
+having count(*) = m;
+select c1.fname into n1 from customers c1 where c1.cid = c;
+select c1.lname into n2 from customers c1 where c1.cid = c;
+name := n1||n2;
+return name;
+end maxcustomer;
+/
 
+declare 
+name varchar2(40);
+p products.pid%type;
+fo products.food%type;
+fl products.flavor%type;
+begin
+fo:='&food';
+fl:='&flavor';
+select p1.pid into p from products p1 where p1.food = fo and p1.flavor = fl;
+name := maxcustomer(p);
+dbms_output.put_line('Name: '||name);
+end;
+/
 
 REM End of Question 4
 
 REM 5. Implement Question (2) using stored function to return the amount to be paid 
 REM and update the same, for the given receipt number.
 
-create or replace function amountcalc(amt IN products.price%type, discount OUT products.price%type, discountp OUT int) return products.price%type
+create or replace function amountcalc(amt IN products.price%type) return products.price%type
 as
+discount products.price%type;
 begin
 discount := 0;
-discountp := 0;
 if amt > 50 then
 discount := 0.2*amt;
-discountp := 20;
 else
 if amt > 25 then
 discount := 0.1*amt;
-discountp := 10;
 else
 if amt > 10 then
 discount := 0.05*amt;
-discountp := 5;
 end if;
 end if;
 end if;
@@ -275,7 +305,9 @@ end loop;
 dbms_output.put_line('------------------------------------------');
 dbms_output.put_line('Total Quantity = '||qty);
 dbms_output.put_line('Total = $ '||amt);
-total := amountcalc(amt, discount, discountp);
+total := amountcalc(amt);
+discount := amt - total;
+discountp := ROUND(discount*100/amt);
 update Receipts set amount = total where Receipts.rno = rec_sel;
 dbms_output.put_line('Discount ('||discountp||'%) = $ '||discount);
 dbms_output.put_line('Grand Total = $ '||total);
