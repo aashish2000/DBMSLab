@@ -1,4 +1,5 @@
 REM ASSIGNMENT 5
+
 REM 1. Check whether the given combination of food and flavor is available. If any one or
 REM both are not available, display the relevant message.
 declare
