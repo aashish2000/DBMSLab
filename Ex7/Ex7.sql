@@ -17,9 +17,9 @@ REM of Flavor and Food is not already available.
 create or replace trigger combination
 before insert on products for each row
 declare
-   	p_food products.food%type;
-	p_flavor products.flavor%type;
-	cursor c1 is select food,flavor from products;
+p_food products.food%type;
+p_flavor products.flavor%type;
+cursor c1 is select food,flavor from products;
 begin
 open c1;
 loop	
