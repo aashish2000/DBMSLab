@@ -1,7 +1,7 @@
 REM ASSIGNMENT 7
 
-REM Savepoint
-savepoint bakerysave;
+REM Bakery Database
+@Z:\Ex3\Bakery.sql;
 
 REM Add amount column to Receipts and set value
 alter table Receipts add amount number(5,2);
@@ -91,8 +91,5 @@ end;
 
 insert into item_list values(31874, 4, '70-MAR');
 insert into item_list values(31874, 5, '70-MAR');
-
-REM Rollback
-rollback to bakerysave;
 
 REM End
