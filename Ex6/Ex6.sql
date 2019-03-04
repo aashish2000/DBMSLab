@@ -111,7 +111,7 @@ budget products.price%type;
 qty int;
 iprice products.price%type;
 foodin products.food%type;
-foodo products.flavor%type;
+foodo products.food%type;
 flavoro products.flavor%type;
 pido products.pid%type;
 priceo products.price%type;
