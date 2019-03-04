@@ -185,7 +185,7 @@ exit;
 end if;
 end loop;
 if ord = 1 then
-cidin := '&cidin';
+cidin := &cidin;
 datein := '&datein';
 insert into Receipts values(receiptin, datein, cidin);
 end if;
