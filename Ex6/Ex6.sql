@@ -1,7 +1,7 @@
 REM ASSIGNMENT 6
 
 REM Savepoint
-savepoint S1;
+savepoint savebakery;
 
 REM Add column for amount
 alter table Receipts add amount number(5,2);
@@ -321,6 +321,6 @@ end;
 REM End of Question 5
 
 REM Rollback
-rollback to S1;
+rollback to savebakery;
 
 REM End
