@@ -27,6 +27,7 @@ if SQL%ROWCOUNT=1 then
 DBMS_OUTPUT.PUT_LINE('One row was found!');
 end if;
 end;
+/
 
 REM 2. While inserting the receipt details, raise an exception when the 
 REM receipt date is greater than the current date.
@@ -52,5 +53,6 @@ return;
 end;
 insert into Receipts values(rn, rd, cid);
 end;
+/
 
 REM End

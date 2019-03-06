@@ -35,7 +35,6 @@ total := amt - discount;
 end discountcalc;
 /
 
-
 declare 
 cust_name1 customers.lname%type;
 cust_name2 customers.fname%type;
@@ -166,6 +165,7 @@ end ordinalinc;
 declare
 ord item_list.ordinal%type;
 itemin item_list.item%type;
+iprice products.price%type;
 receiptin item_list.rno%type;
 cidin customers.cid%type;
 datein date;
@@ -187,7 +187,8 @@ end loop;
 if ord = 1 then
 cidin := &cidin;
 datein := '&datein';
-insert into Receipts values(receiptin, datein, cidin);
+select price into iprice from products where pid=itemin;
+insert into Receipts values(receiptin, datein, cidin, iprice);
 end if;
 insert into item_list values(receiptin, ord, itemin);
 dbms_output.put_line('Inserted '||receiptin||' '||ord||' '||itemin);
