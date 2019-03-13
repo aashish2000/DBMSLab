@@ -1,0 +1,58 @@
+SQL> @Z:\Answers.sql
+SQL> alter table nobel modify year_award number(4) constraint ya_nn not null;
+
+Table altered.
+
+SQL> 
+SQL> select * from nobel where name like '___i%' and category = 'Pea';
+
+LAUREATE_ID NAME                           G CAT FIELD                          
+----------- ------------------------------ - --- -------------------------      
+YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                     
+---------- ------------------------------ --------- ----------                  
+        107 David Trimble                  m Pea Negotiation                    
+      1998 Ulster Unionist party Leader   15-OCT-44 Ireland                     
+                                                                                
+        115 Kofi Annan                     m Pea World organizing               
+      2001 UN General                     08-APR-38 Ghana                       
+                                                                                
+
+SQL> 
+SQL> select name, category, year_award, country, dob from nobel
+  2  where year_award = 1998 and ((extract(year from dob)) between 1930 and 1945)
+  3  and country in ('USA', 'India');
+
+NAME                           CAT YEAR_AWARD COUNTRY    DOB                    
+------------------------------ --- ---------- ---------- ---------              
+Louis J Ignaroo                Med       1998 USA        31-MAY-41              
+Amartya Sen                    Eco       1998 India      03-NOV-33              
+
+SQL> 
+SQL> select aff_role, count(*) from nobel
+  2  where year_award = 2001 and aff_role is not null
+  3  group by aff_role
+  4  order by aff_role;
+
+AFF_ROLE                         COUNT(*)                                       
+------------------------------ ----------                                       
+Nagoya University                       1                                       
+Scripps Research Institute              1                                       
+UN General                              1                                       
+University of California                1                                       
+University of Colorado                  2                                       
+
+SQL> 
+SQL> select country, category, count(*) from nobel
+  2  group by country, category
+  3  having count(*) > 1
+  4  order by country;
+
+COUNTRY    CAT   COUNT(*)                                                       
+---------- --- ----------                                                       
+China      Phy          2                                                       
+Ireland    Pea          2                                                       
+USA        Eco          3                                                       
+USA        Med          2                                                       
+USA        Phy          4                                                       
+
+SQL> spool off

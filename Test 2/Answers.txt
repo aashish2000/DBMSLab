@@ -1,0 +1,349 @@
+SQL> @Z:\Create.sql
+SQL> drop table order_list;
+
+Table dropped.
+
+SQL> drop table orders;
+
+Table dropped.
+
+SQL> drop table delivery_boy;
+
+Table dropped.
+
+SQL> drop table pizza;
+
+Table dropped.
+
+SQL> drop table pcustomer;
+
+Table dropped.
+
+SQL> 
+SQL> REM pcustomer(cust_id, cust_name,address,phone)
+SQL> 
+SQL> create table pcustomer(
+  2  cust_id varchar2(5) constraint cpk primary key,
+  3  cust_name varchar2(15),
+  4  address varchar2(30),
+  5  phone number(10)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> insert into pcustomer values('c001','hari','32 RING ROAD,ALWARPET',900120003);
+
+1 row created.
+
+SQL> insert into pcustomer values('c002','prasanth','42 bull ROAD,numgambakkam',9444120003);
+
+1 row created.
+
+SQL> insert into pcustomer values('c003','neethu','12a RING ROAD,ALWARPET',9840112003);
+
+1 row created.
+
+SQL> insert into pcustomer values('c004','jim','P.H ROAD,Annanagar',9845712993);
+
+1 row created.
+
+SQL> insert into pcustomer values('c005','sindhu','100 feet ROAD,vadapalani',9840166677);
+
+1 row created.
+
+SQL> 
+SQL> REM pizza (pizza_id, pizza_type, unit_price)
+SQL> 
+SQL> create table pizza(
+  2  pizza_id varchar2(5) constraint ppk primary key,
+  3  pizza_type varchar2(10),
+  4  unit_price number(4)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> insert into pizza values('p001','pan',130);
+
+1 row created.
+
+SQL> insert into pizza values('p002','grilled',230);
+
+1 row created.
+
+SQL> insert into pizza values('p003','italian',200);
+
+1 row created.
+
+SQL> insert into pizza values('p004','spanish',260);
+
+1 row created.
+
+SQL> insert into pizza values('p005','supremo',250);
+
+1 row created.
+
+SQL> 
+SQL> REM delivery_boy(delv_id, name, phone)
+SQL> 
+SQL> create table delivery_boy(
+  2  delv_id varchar2(5) constraint dpk primary key,
+  3  name varchar2(15),
+  4  phone number(10)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> insert into  delivery_boy values('d001','gridharan',90908070);
+
+1 row created.
+
+SQL> insert into  delivery_boy values('d002','sam',9444109080);
+
+1 row created.
+
+SQL> insert into  delivery_boy values('d003','krish',80907090);
+
+1 row created.
+
+SQL> insert into  delivery_boy values('d004','nethan',1234567);
+
+1 row created.
+
+SQL> insert into  delivery_boy values('d005','jai',911119090);
+
+1 row created.
+
+SQL> 
+SQL> REM orders(order_no, cust_id, order_date ,delv_date, total_amt,discount, bill_amt, delv_id)
+SQL> 
+SQL> create table orders(
+  2  order_no varchar2(5) constraint opk primary key,
+  3  cust_id varchar2(5) constraint cidfk references pcustomer(cust_id),
+  4  order_date date,
+  5  delv_date date,
+  6  total_amt number(8,2),
+  7  discount number(8,2),
+  8  bill_amt number(8,2),
+  9  delv_id varchar2(5) constraint didfk references delivery_boy(delv_id)
+ 10  );
+
+Table created.
+
+SQL> 
+SQL> insert into orders values('OP100','c001','28-mar-2011','30-mar-2011',null,null,null,'d003');
+
+1 row created.
+
+SQL> insert into orders values('OP200','c002','28-mar-2011','30-mar-2011',null,null,null,'d002');
+
+1 row created.
+
+SQL> insert into orders values('OP300','c003','29-mar-2011','31-mar-2011',null,null,null,'d001');
+
+1 row created.
+
+SQL> insert into orders values('OP400','c004','29-mar-2011','31-mar-2011',null,null,null,'d001');
+
+1 row created.
+
+SQL> insert into orders values('OP500','c001','29-mar-2011','31-mar-2011',null,null,null,'d001');
+
+1 row created.
+
+SQL> insert into orders values('OP600','c005','29-mar-2011','02-apr-2011',null,null,null,'d005');
+
+1 row created.
+
+SQL> insert into orders values('OP700','c005','29-mar-2011','31-mar-2011',null,null,null,'d001');
+
+1 row created.
+
+SQL> 
+SQL> REM order_list(order_no, pizza_id, qty)
+SQL> 
+SQL> create table order_list(
+  2  order_no varchar2(5) constraint onfk references orders(order_no),
+  3  pizza_id varchar2(5) constraint pidfk references pizza(pizza_id),
+  4  qty number(3),
+  5  constraint olpk primary key(order_no, pizza_id)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> insert into order_list values('OP100','p001',3);
+
+1 row created.
+
+SQL> insert into order_list values('OP100','p002',2);
+
+1 row created.
+
+SQL> insert into order_list values('OP100','p003',1);
+
+1 row created.
+
+SQL> insert into order_list values('OP100','p004',5);
+
+1 row created.
+
+SQL> 
+SQL> insert into order_list values('OP200','p003',2);
+
+1 row created.
+
+SQL> insert into order_list values('OP200','p001',6);
+
+1 row created.
+
+SQL> insert into order_list values('OP200','p004',8);
+
+1 row created.
+
+SQL> 
+SQL> insert into order_list values('OP300','p003',10);
+
+1 row created.
+
+SQL> 
+SQL> insert into order_list values('OP400','p001',3);
+
+1 row created.
+
+SQL> insert into order_list values('OP400','p004',1);
+
+1 row created.
+
+SQL> 
+SQL> insert into order_list values('OP500','p003',6);
+
+1 row created.
+
+SQL> insert into order_list values('OP500','p004',5);
+
+1 row created.
+
+SQL> @Z:\Answers.sql
+SQL> create or replace procedure discalc(ono IN orders.order_no%type, discountp OUT int) as
+  2  pizzas int;
+  3  begin
+  4  discountp:=0;
+  5  select sum(qty) into pizzas from order_list where order_no = ono;
+  6  if pizzas >= 7 then
+  7  discountp:=10;
+  8  else
+  9  if pizzas >= 4 then
+ 10  discountp:=7;
+ 11  else
+ 12  if pizzas = 3 then
+ 13  discountp:=5;
+ 14  end if;
+ 15  end if;
+ 16  end if;
+ 17  end discalc;
+ 18  /
+
+Procedure created.
+
+SQL> 
+SQL> create or replace procedure totalcalc(ono IN orders.order_no%type, total OUT orders.total_amt%type) as
+  2  cursor c1 is select o.qty, p.unit_price from order_list o join pizza p on(p.pizza_id = o.pizza_id)
+  3  where o.order_no = ono;
+  4  pq order_list.qty%type;
+  5  pp pizza.unit_price%type;
+  6  begin
+  7  open c1;
+  8  total:=0;
+  9  loop
+ 10  fetch c1 into pq, pp;
+ 11  if c1%FOUND then
+ 12  total:=total+pq*pp;
+ 13  else
+ 14  exit;
+ 15  end if;
+ 16  end loop;
+ 17  end totalcalc;
+ 18  /
+
+Procedure created.
+
+SQL> 
+SQL> declare
+  2  cursor oc is select order_no from orders;
+  3  total orders.total_amt%type;
+  4  discountp int;
+  5  ono orders.order_no%type;
+  6  bamt orders.bill_amt%type;
+  7  disc orders.discount%type;
+  8  begin
+  9  open oc;
+ 10  loop
+ 11  fetch oc into ono;
+ 12  if oc%FOUND then
+ 13  discalc(ono,discountp);
+ 14  totalcalc(ono,total);
+ 15  disc:=discountp*total/100;
+ 16  bamt:=total-disc;
+ 17  update orders set discount = disc, total_amt = total, bill_amt = bamt where order_no = ono;
+ 18  else
+ 19  exit;
+ 20  end if;
+ 21  end loop;
+ 22  end;
+ 23  /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> select * from orders;
+
+ORDER CUST_ ORDER_DAT DELV_DATE  TOTAL_AMT   DISCOUNT   BILL_AMT DELV_          
+----- ----- --------- --------- ---------- ---------- ---------- -----          
+OP100 c001  28-MAR-11 30-MAR-11       2350        235       2115 d003           
+OP200 c002  28-MAR-11 30-MAR-11       3260        326       2934 d002           
+OP300 c003  29-MAR-11 31-MAR-11       2000        200       1800 d001           
+OP400 c004  29-MAR-11 31-MAR-11        650       45.5      604.5 d001           
+OP500 c001  29-MAR-11 31-MAR-11       2500        250       2250 d001           
+OP600 c005  29-MAR-11 02-APR-11          0          0          0 d005           
+OP700 c005  29-MAR-11 31-MAR-11          0          0          0 d001           
+
+7 rows selected.
+
+SQL> 
+SQL> 
+SQL> @Z:\Additional.sql
+SQL> REM Trigger - a delivery boy can deliver a maximum of 3 orders per day
+SQL> 
+SQL> create or replace trigger delcheck
+  2  before insert on orders for each row
+  3  declare
+  4  cursor c1 is select count(*) from orders o join delivery_boy d on(o.delv_id = d.delv_id)
+  5  where d.delv_id = :NEW.delv_id and o.delv_date = :NEW.delv_date;
+  6  counts int;
+  7  begin
+  8  open c1;
+  9  fetch c1 into counts;
+ 10  if counts >= 3 then
+ 11  raise_application_error(-20003, 'Error: Maximum 3 orders for a delivery boy per day!');
+ 12  end if;
+ 13  end;
+ 14  /
+
+Trigger created.
+
+SQL> 
+SQL> REM Check trigger
+SQL> 
+SQL> insert into orders values('OP800','c001','29-mar-2011','31-mar-2011',null,null,null,'d001');
+insert into orders values('OP800','c001','29-mar-2011','31-mar-2011',null,null,null,'d001')
+            *
+ERROR at line 1:
+ORA-20003: Error: Maximum 3 orders for a delivery boy per day! 
+ORA-06512: at "4093.DELCHECK", line 9 
+ORA-04088: error during execution of trigger '4093.DELCHECK' 
+
+
+SQL> spool off
