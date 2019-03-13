@@ -9,3 +9,4 @@ DBMS Laboratory Exercises done in Semester 4.
 6. Procedures and Functions <br>
 7. Triggers <br>
 8. Exception Handling <br>
+9. Java Database Connectivity <br>
